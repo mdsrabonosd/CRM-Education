@@ -1,0 +1,249 @@
+﻿@using CRM.Entities
+
+@model List<Course>
+
+@{
+    Layout = "_PrivateLayout";
+}
+  
+ 
+<style>
+    .course-page {
+        padding: 25px;
+        width: 100%;
+    }
+
+    .course-card {
+        background: white;
+        padding: 25px;
+        border-radius: 14px;
+        border: 1px solid #e6e8f0;
+    }
+
+    .course-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 25px;
+        gap: 15px;
+        flex-wrap: wrap;
+    }
+
+    .course-title {
+        font-size: 22px;
+        font-weight: 700;
+        color: #17233d;
+    }
+
+    .btn-purple {
+        background: #635bdf;
+        color: white;
+        border-radius: 8px;
+        padding: 10px 18px;
+        text-decoration: none;
+    }
+
+        .btn-purple:hover {
+            background: #5046c7;
+            color: white;
+        }
+
+    .course-table th {
+        background: #f4f5fb;
+        padding: 15px;
+        font-weight: 600;
+        color: #667085;
+        white-space: nowrap;
+    }
+
+    .course-table td {
+        padding: 15px;
+        vertical-align: middle;
+    }
+
+    .course-table tbody tr:hover {
+        background: #fafaff;
+    }
+
+    .badge-free {
+        background: #e7f8ef;
+        color: #17844d;
+        padding: 6px 12px;
+        border-radius: 20px;
+    }
+
+    .badge-paid {
+        background: #eeeafd;
+        color: #635bdf;
+        padding: 6px 12px;
+        border-radius: 20px;
+    }
+
+    .action-group {
+        display: flex;
+        gap: 6px;
+    }
+</style>
+
+<div class="course-page">
+
+    <div class="course-card">
+
+        <div class="course-header">
+            <div>
+                <h3 class="course-title">Course Management</h3>
+                <p class="text-muted mb-0">
+                    Manage all academy courses
+                </p>
+            </div>
+
+            <a asp-controller="Courses"
+               asp-action="AddCourse"
+               class="btn-purple">
+                + Add New Course
+            </a>
+        </div>
+
+        <div class="mb-4">
+            <input type="search"
+                   id="courseSearch"
+                   class="form-control"
+                   style="max-width:350px;"
+                   placeholder="Search courses..." />
+        </div>
+
+        <div class="table-responsive">
+
+            <table class="table course-table" id="courseTable">
+
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Course Title</th>
+                        <th>Description</th>
+                        <th>Instructor</th>
+                        <th>Type</th>
+                        <th>Price</th>
+                        <th>Created</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+
+                    @foreach (var course in Model)
+                    {
+                        <tr>
+                            <td>@course.CourseId</td>
+
+                            <td>
+                                <strong>@course.Title</strong>
+                            </td>
+
+                            <td>
+                                @(course.Description?.Length > 60
+                                    ? course.Description.Substring(0, 60) + "..."
+                                    : course.Description)
+                            </td>
+
+                            <td>
+                                Instructor #@course.InstructorId
+                            </td>
+
+                            <td>
+                                @if (course.IsFree)
+                                {
+                                    <span class="badge-free">Free</span>
+                                }
+                                else
+                                {
+                                    <span class="badge-paid">Paid</span>
+                                }
+                            </td>
+
+                            <td>
+                                @if (course.IsFree)
+                                {
+                                    <span>Free</span>
+                                }
+                                else
+                                {
+                                    <span>
+                                        @course.Price.ToString("N2") BDT
+                                    </span>
+                                }
+                            </td>
+
+                            <td>
+                                @course.CreatedAt.ToString("dd MMM yyyy")
+                            </td>
+
+                            <td>
+                                <div class="action-group">
+
+                                    <a asp-action="Detail"
+                                       asp-route-id="@course.CourseId"
+                                       class="btn btn-sm btn-outline-primary">
+                                        View
+                                    </a>
+
+                                    <a asp-action="AddCourse"
+                                       asp-route-id="@course.CourseId"
+                                       class="btn btn-sm btn-outline-warning">
+                                        Edit
+                                    </a>
+
+                                    <a asp-action="Delete"
+                                       asp-route-id="@course.CourseId"
+                                       class="btn btn-sm btn-outline-danger">
+                                        Delete
+                                    </a>
+
+                                </div>
+                            </td>
+                        </tr>
+                    }
+
+                </tbody>
+            </table>
+
+        </div>
+
+    </div>
+</div>
+
+ 
+    <script>
+        document.getElementById("courseSearch")
+            .addEventListener("input", function () {
+
+                const search = this.value.toLowerCase();
+
+                document.querySelectorAll(
+                    "#courseTable tbody tr"
+                ).forEach(row => {
+
+                    row.style.display =
+                        row.innerText.toLowerCase().includes(search)
+                            ? ""
+                            : "none";
+                });
+            });
+    </script>
+@if (User.Identity?.IsAuthenticated == true)
+{
+    <span>
+        Welcome, @User.Identity.Name
+    </span>
+
+    <form asp-controller="Account"
+          asp-action="Logout"
+          method="post">
+
+        @Html.AntiForgeryToken()
+
+        <button type="submit" class="btn btn-danger">
+            Logout
+        </button>
+    </form>
+}
