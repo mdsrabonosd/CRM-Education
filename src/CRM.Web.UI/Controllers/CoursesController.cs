@@ -6,10 +6,10 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace CRM.Web.UI.Controllers
 {
-    [Authorize]
+    //[Authorize]
     public class CoursesController : Controller
     {
-        private readonly ICourseFacade _courseFacade; 
+        private readonly ICourseFacade _courseFacade;
         private readonly IInstructorProfileFacade _instructorProfileFacade;
 
         public CoursesController(ICourseFacade courseFacade, IInstructorProfileFacade instructorProfileFacade)
@@ -18,116 +18,103 @@ namespace CRM.Web.UI.Controllers
             _instructorProfileFacade = instructorProfileFacade;
         }
 
+        // GET: Courses
         public async Task<IActionResult> Index()
         {
             var courses = await _courseFacade.GetCoursesAsync();
-
-            //Course course = new Course();
-            //List<Course> list = new List<Course>();
             return View(courses);
         }
 
-        //public IActionResult Index(int page = 0)
-        //{
-        //    int pageno = 0;
-
-        //    //if(page <= pageno)
-        //    //    pageno = 1; 
-        //    //else
-        //    //    pageno = page;
-
-        //    pageno = (page <= pageno) ? 1 : page;
-
-
-        //    ViewBag.pageno = pageno;
-
-        //    //Model
-
-        //    //List<Course> listCourse = new List<Course>();
-        //    //listCourse.Add(new Course()
-        //    //{
-        //    //    Title="Bangla"
-        //    //});
-        //    //listCourse.Add(new Course()
-        //    //{
-        //    //    Title = "English"
-        //    //});
-        //    var courses = Courses;
-
-        //    return View(courses);
-        //}
-
+        // GET: Courses/Detail/5
         public async Task<IActionResult> Detail(int id)
         {
-            var course =  await _courseFacade.GetCourseByIdAsync(id);
-
-            //var course = Courses.FirstOrDefault(x => x.Id == id);
+            var course = await _courseFacade.GetCourseByIdAsync(id);
 
             if (course == null)
             {
                 return NotFound();
             }
-            
-            var instructorList = await _instructorProfileFacade
-      .GetInstructorProfilesAsync();
+
+            var instructorList = await _instructorProfileFacade.GetInstructorProfilesAsync();
+            var instructor = instructorList.FirstOrDefault(i => i.UserId == course.InstructorId);
+
+            ViewBag.InstructorName = instructor != null ? instructor.Bio : $"Instructor #{course.InstructorId}";
+
+            return View(course);
+        }
+
+        // GET: Courses/AddCourse/5 (Supports both Create and Edit)
+        [HttpGet]
+        public async Task<IActionResult> AddCourse(int id)
+        {
+            Course course = null;
+
+            if (id > 0)
+            {
+                course = await _courseFacade.GetCourseByIdAsync(id);
+            }
+
+            if (course == null)
+            {
+                course = new Course();
+            }
+
+            var instructorList = await _instructorProfileFacade.GetInstructorProfilesAsync();
 
             ViewBag.Instructors = new SelectList(
                 instructorList,
                 "UserId",
-                "Expertise",
+                "Bio",
                 course.InstructorId
             );
 
             return View(course);
         }
 
-
-        [HttpGet]
-        public async Task<IActionResult> AddCourse(int id)
-        {
-            Course course = await _courseFacade.GetCourseByIdAsync(id);
-
-            if(course == null)
-                course = new Course();
-            
-            
-            var instructorList = await _instructorProfileFacade.GetInstructorProfilesAsync();
-
-            ViewBag.Instructors = new SelectList(
-                instructorList,
-                "UserId",
-                "Bio"
-            ); 
-
-            return View(course);
-        }
-
+        // POST: Courses/AddCourse
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> AddCourse(Course course)
         {
-            //if (!ModelState.IsValid)
-            //{
-            //    return View("AddCourse", course);
-            //}
             try
             {
                 if (course.CourseId > 0)
-                    _courseFacade.UpdateCourseAsync(course);
+                {
+                    await _courseFacade.UpdateCourseAsync(course);
+                }
                 else
-                    _courseFacade.AddCourseAsync(course);
+                {
+                    await _courseFacade.AddCourseAsync(course);
+                }
             }
             catch (Exception ex)
             {
+                var instructorList = await _instructorProfileFacade.GetInstructorProfilesAsync();
+                ViewBag.Instructors = new SelectList(instructorList, "UserId", "Bio", course.InstructorId);
+                ModelState.AddModelError("", "An error occurred while saving the course.");
                 return View("AddCourse", course);
             }
 
-            // পরে এখানে Database-এ Save করবেন
-            // _context.Courses.Add(course);
-            // _context.SaveChanges();
-
-            return RedirectToAction("Index");
+            return RedirectToAction(nameof(Index));
         }
-         
+
+        // POST: Courses/Delete/5
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Delete(int id)
+        {
+            try
+            {
+                // Note: If your ICourseFacade uses a different method name for deleting 
+                // (e.g., DeleteCourse, RemoveCourseAsync), update it here to match your interface.
+                await _courseFacade.DeleteCourseAsync(id);
+            }
+            catch (Exception ex)
+            {
+                // Handle deletion exceptions if necessary
+            }
+
+            return RedirectToAction(nameof(Index));
+        }
     }
 }

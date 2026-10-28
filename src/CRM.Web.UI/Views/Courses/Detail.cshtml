@@ -2,187 +2,225 @@
 @model Course
 
 @{
-    ViewData["Title"] = "Edit Course";
+    ViewData["Title"] = "Course Details";
     Layout = "_PrivateLayout";
 }
 
-<div class="course-form-page">
+<style>
+    .detail-container {
+        padding: 30px;
+        max-width: 1000px;
+        margin: 0 auto;
+    }
 
-    <div class="course-page-header">
-        <div>
-            <h2 class="course-page-title">Edit Course</h2>
-            <p class="course-page-subtitle mb-0">
-                Update course information for Piistech Academy
-            </p>
-        </div>
+    .detail-header-card {
+        background: #ffffff;
+        border: 1px solid #e6e8f0;
+        border-radius: 16px;
+        padding: 30px;
+        margin-bottom: 24px;
+        box-shadow: 0 2px 8px rgba(99, 91, 223, 0.04);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 15px;
+    }
 
-        <a asp-controller="Courses"
-           asp-action="Index"
-           class="course-btn-cancel">
-            Back to Courses
-        </a>
-    </div>
+    .detail-title {
+        font-size: 24px;
+        font-weight: 700;
+        color: #17233d;
+        margin-bottom: 6px;
+    }
 
-    <form asp-controller="Course"
-          asp-action="EditCourse"
-          method="post"
-          id="editCourseForm">
+    .detail-subtitle {
+        font-size: 14px;
+        color: #8190a7;
+    }
 
-        @Html.AntiForgeryToken()
+    .content-card {
+        background: #ffffff;
+        border: 1px solid #e6e8f0;
+        border-radius: 16px;
+        padding: 25px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.02);
+    }
 
-        <input asp-for="CourseId" type="hidden" />
+    .details-table th {
+        background: #f4f5fb;
+        color: #667085;
+        font-weight: 600;
+        width: 30%;
+        padding: 16px 20px;
+        vertical-align: middle;
+        border-color: #eef0f5;
+    }
 
-        <div asp-validation-summary="ModelOnly"
-             class="text-danger mb-3"></div>
+    .details-table td {
+        padding: 16px 20px;
+        vertical-align: middle;
+        color: #17233d;
+        font-weight: 500;
+        border-color: #eef0f5;
+    }
 
-        <div class="course-form-card">
+    .badge-free-lg {
+        background: #e7f8ef;
+        color: #17844d;
+        padding: 6px 14px;
+        border-radius: 20px;
+        font-weight: 600;
+        font-size: 13px;
+        display: inline-block;
+    }
 
-            <h4 class="course-section-title">
-                Basic Course Information
-            </h4>
+    .badge-paid-lg {
+        background: #eeeafd;
+        color: #635bdf;
+        padding: 6px 14px;
+        border-radius: 20px;
+        font-weight: 600;
+        font-size: 13px;
+        display: inline-block;
+    }
 
-            <div class="row g-4">
+    .btn-custom-secondary {
+        border: 1px solid #dce1eb;
+        color: #64748b;
+        padding: 10px 20px;
+        border-radius: 9px;
+        text-decoration: none;
+        background: white;
+        font-weight: 600;
+        transition: all 0.2s;
+    }
 
-                <div class="col-md-12">
-                    <label asp-for="Title" class="form-label">
-                        Course Title
-                        <span class="course-required">*</span>
-                    </label>
-
-                    <input asp-for="Title"
-                           class="form-control"
-                           maxlength="200"
-                           placeholder="Enter course title" />
-
-                    <span asp-validation-for="Title"
-                          class="text-danger small"></span>
-                </div>
-
-                <div class="col-md-12">
-                    <label asp-for="Description" class="form-label">
-                        Course Description
-                    </label>
-
-                    <textarea asp-for="Description"
-                              class="form-control"
-                              rows="5"
-                              placeholder="Enter course description"></textarea>
-
-                    <span asp-validation-for="Description"
-                          class="text-danger small"></span>
-                </div>
-
-                <div class="col-md-12">
-                    <label asp-for="InstructorId" class="form-label">
-                        Select Instructor
-                        <span class="course-required">*</span>
-                    </label>
-
-                    <select asp-for="InstructorId"
-                            asp-items="ViewBag.Instructors"
-                            class="form-select">
-                        <option value="0">
-                            -- Select Instructor --
-                        </option>
-                    </select>
-
-                    <span asp-validation-for="InstructorId"
-                          class="text-danger small"></span>
-                </div>
-
-            </div>
-        </div>
-
-        <div class="course-form-card">
-
-            <h4 class="course-section-title">
-                Pricing Information
-            </h4>
-
-            <div class="course-pricing-box">
-                <div class="form-check form-switch">
-
-                    <input asp-for="IsFree"
-                           class="form-check-input"
-                           type="checkbox"
-                           id="isFreeSwitch" />
-
-                    <label class="form-check-label fw-semibold"
-                           for="isFreeSwitch">
-                        Free Course
-                    </label>
-                </div>
-
-                <p class="course-help-text mb-0">
-                    Enable this option if the course is free.
-                </p>
-            </div>
-
-            <div class="row" id="priceSection">
-                <div class="col-md-6">
-
-                    <label asp-for="Price" class="form-label">
-                        Course Price (BDT)
-                    </label>
-
-                    <div class="input-group">
-                        <span class="input-group-text">BDT</span>
-
-                        <input asp-for="Price"
-                               type="number"
-                               step="0.01"
-                               min="0"
-                               class="form-control"
-                               id="coursePrice" />
-                    </div>
-
-                    <span asp-validation-for="Price"
-                          class="text-danger small"></span>
-                </div>
-            </div>
-        </div>
-
-        <div class="course-form-actions">
-
-            <a asp-controller="Course"
-               asp-action="Index"
-               class="course-btn-cancel">
-                Cancel
-            </a>
-
-            <button type="submit" class="course-btn-save">
-                Update Course
-            </button>
-        </div>
-
-    </form>
-</div>
-
-<partial name="_ValidationScriptsPartial" />
-
-<script>
-    document.addEventListener("DOMContentLoaded", function () {
-
-        const freeSwitch =
-            document.getElementById("isFreeSwitch");
-
-        const priceSection =
-            document.getElementById("priceSection");
-
-        const priceInput =
-            document.getElementById("coursePrice");
-
-        function updatePrice() {
-            if (freeSwitch.checked) {
-                priceSection.style.display = "none";
-                priceInput.value = "0";
-            } else {
-                priceSection.style.display = "";
-            }
+        .btn-custom-secondary:hover {
+            background: #f5f6fb;
+            color: #17233d;
         }
 
-        freeSwitch.addEventListener("change", updatePrice);
+    .btn-custom-primary {
+        background: #635bdf;
+        color: white;
+        padding: 10px 22px;
+        border-radius: 9px;
+        text-decoration: none;
+        font-weight: 600;
+        border: none;
+        transition: all 0.2s;
+    }
 
-        updatePrice();
-    });
-</script>
+        .btn-custom-primary:hover {
+            background: #5046c7;
+            color: white;
+        }
+
+    .btn-custom-danger {
+        background: #fff;
+        color: #e74c3c;
+        border: 1px solid #fadbd8;
+        padding: 10px 22px;
+        border-radius: 9px;
+        font-weight: 600;
+        transition: all 0.2s;
+    }
+
+        .btn-custom-danger:hover {
+            background: #e74c3c;
+            color: white;
+        }
+</style>
+
+<div class="detail-container">
+
+    <!-- Top Header Banner -->
+    <div class="detail-header-card">
+        <div>
+            <h2 class="detail-title">Course Details</h2>
+            <p class="detail-subtitle mb-0">Viewing record for @Model.Title</p>
+        </div>
+        <div>
+            <a asp-controller="Courses" asp-action="Index" class="btn-custom-secondary">
+                &larr; Back to List
+            </a>
+        </div>
+    </div>
+
+    <!-- Main Content Card with Table Layout -->
+    <div class="content-card">
+        <div class="table-responsive">
+            <table class="table details-table mb-0">
+                <tbody>
+                    <tr>
+                        <th>Course ID</th>
+                        <td>#@Model.CourseId</td>
+                    </tr>
+                    <tr>
+                        <th>Course Title</th>
+                        <td><strong>@Model.Title</strong></td>
+                    </tr>
+                    <tr>
+                        <th>Description</th>
+                        <td style="line-height: 1.6; font-weight: 400; color: #45536c;">
+                            @(string.IsNullOrEmpty(Model.Description) ? "No description provided for this course." : Model.Description)
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>Assigned Instructor</th>
+                        <td>@ViewBag.InstructorName</td>
+                    </tr>
+                    <tr>
+                        <th>Course Type</th>
+                        <td>
+                            @if (Model.IsFree)
+                            {
+                                <span class="badge-free-lg">Free Course</span>
+                            }
+                            else
+                            {
+                                <span class="badge-paid-lg">Paid Course</span>
+                            }
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>Enrollment Price</th>
+                        <td>
+                            @if (Model.IsFree)
+                            {
+                                <span class="text-success fw-bold">0.00 BDT</span>
+                            }
+                            else
+                            {
+                                <span class="text-success fw-bold">@Model.Price.ToString("N2") BDT</span>
+                            }
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>Creation Date</th>
+                        <td>@Model.CreatedAt.ToString("dd MMM yyyy, hh:mm tt")</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <hr style="border-color: #eef0f5; margin: 30px 0;" />
+
+        <!-- Action Footer Bar -->
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+
+            <!-- Delete Form Option -->
+           
+
+            <!-- Edit Option -->
+            <div class="d-flex gap-2">
+                <a asp-action="Index" asp-route-id="@Model.CourseId" class="btn-custom-primary">
+                 Back Course List
+                </a>
+            </div>
+
+        </div>
+
+    </div>
+</div>
